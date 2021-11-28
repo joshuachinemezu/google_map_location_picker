@@ -81,6 +81,14 @@ class MapPickerState extends State<MapPicker> {
   String? _address;
 
   String? _placeId;
+  String? _streetNumber;
+  String? _route;
+  String? city;
+  String? _localGovernment;
+  String? _state;
+  String? _country;
+  String? _countryCode;
+  String? _postalCode;
 
   void _onToggleMapTypePressed() {
     final MapType nextType =
@@ -240,6 +248,14 @@ class MapPickerState extends State<MapPicker> {
                         }
                         _address = data["address"];
                         _placeId = data["placeId"];
+                        _streetNumber = data["streetNumber"];
+                        _route = data["route"];
+                        city = data["city"];
+                        _localGovernment = data["localGovernment"];
+                        _state = data["state"];
+                        _country = data["country"];
+                        _countryCode = data["countryCode"];
+                        _postalCode = data["postalCode"];
                         return Text(
                           _address ?? S.of(context).unnamedPlace,
                           style: TextStyle(fontSize: 18),
@@ -255,11 +271,22 @@ class MapPickerState extends State<MapPicker> {
                           latLng: locationProvider.lastIdleLocation,
                           address: _address,
                           placeId: _placeId,
+                          streetNumber: _streetNumber,
+                          route: _route,
+                          city: city,
+                          localGovernment: _localGovernment,
+                          state: _state,
+                          country: _country,
+                          countryCode: _countryCode,
+                          postalCode: _postalCode,
                         )
                       });
                     },
                     child: widget.resultCardConfirmIcon ??
-                        Icon(Icons.arrow_forward),
+                        Icon(
+                          Icons.arrow_forward,
+                          color: Colors.white,
+                        ),
                   ),
                 ],
               ),
@@ -280,15 +307,51 @@ class MapPickerState extends State<MapPicker> {
               headers: await LocationUtils.getAppHeaders()))
           .body);
 
-      return {
-        "placeId": response['results'][0]['place_id'],
-        "address": response['results'][0]['formatted_address']
-      };
+      if (response['results'].length > 0) {
+        List addressComponents = response['results'][0]['address_components'];
+
+        var components = {};
+        for (var a in addressComponents) {
+          for (var type in a["types"]) {
+            components[type] = a["long_name"];
+            if (type == "country") {
+              components["country_code"] = a["short_name"];
+            }
+            if (type == "administrative_area_level_1") {
+              components["state_code"] = a["short_name"];
+            }
+          }
+        }
+
+        return {
+          "placeId": response['results'][0]['place_id'],
+          "address": response['results'][0]['formatted_address'],
+          "streetNumber": components['street_number'],
+          "route": components['route'],
+          "city": components['locality'],
+          "localGovernment": components['administrative_area_level_2'],
+          "state": components['administrative_area_level_1'],
+          "country": components['country'],
+          "countryCode": components['country_code'],
+          "postalCode": components['postal_code'],
+        };
+      }
     } catch (e) {
       print(e);
     }
 
-    return {"placeId": null, "address": null};
+    return {
+      "placeId": null,
+      "address": null,
+      "streetNumber": null,
+      "route": null,
+      "city": null,
+      "localGovernment": null,
+      "state": null,
+      "country": null,
+      "countryCode": null,
+      "postalCode": null
+    };
   }
 
   Widget pin() {
@@ -425,7 +488,7 @@ class _MapFabs extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       alignment: Alignment.topRight,
-      margin: const EdgeInsets.only(top: kToolbarHeight + 24, right: 8),
+      margin: const EdgeInsets.only(top: kToolbarHeight + 50, right: 8),
       child: Column(
         children: <Widget>[
           if (layersButtonEnabled!)
@@ -433,7 +496,7 @@ class _MapFabs extends StatelessWidget {
               onPressed: onToggleMapTypePressed,
               materialTapTargetSize: MaterialTapTargetSize.padded,
               mini: true,
-              child: const Icon(Icons.layers),
+              child: const Icon(Icons.layers, color: Colors.white),
               heroTag: "layers",
             ),
           if (myLocationButtonEnabled!)
@@ -441,7 +504,7 @@ class _MapFabs extends StatelessWidget {
               onPressed: onMyLocationPressed,
               materialTapTargetSize: MaterialTapTargetSize.padded,
               mini: true,
-              child: const Icon(Icons.my_location),
+              child: const Icon(Icons.my_location, color: Colors.white),
               heroTag: "myLocation",
             ),
         ],
