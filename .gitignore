@@ -11,3 +11,4 @@ lib/keys.dart
 /google_map_location_picker.iml
 /.idea
 /android/.idea/
+/pubspec.lock
