@@ -8,15 +8,15 @@ Pod::Spec.new do |s|
   s.description      = <<-DESC
 A new flutter plugin project.
                        DESC
-  s.homepage         = 'https://github.com/humazed/google_map_location_picker'
+  s.homepage         = 'https://github.com/astravest/google_map_location_picker'
   s.license          = { :file => '../LICENSE' }
-  s.author           = { 'humazed' => 'humazed@gmail.com' }
+  s.author           = { 'astravest' => 'dev@astravestapp.com' }
   s.source           = { :path => '.' }
   s.source_files = 'Classes/**/*'
   s.public_header_files = 'Classes/**/*.h'
   s.dependency 'Flutter'
 
   s.swift_versions = ['4.0', '4.2', '5.0', '5.1.2']
-  s.ios.deployment_target = '8.0'
+  s.ios.deployment_target = '10.0'
 end
 
