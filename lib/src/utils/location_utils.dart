@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:package_info/package_info.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:flutter/services.dart';
 
 class LocationUtils {
