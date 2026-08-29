@@ -2,9 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter/services.dart' show rootBundle;
 import 'package:geolocator/geolocator.dart';
 import 'package:google_map_location_picker/generated/l10n.dart';
 import 'package:google_map_location_picker/src/providers/location_provider.dart';
@@ -102,7 +100,8 @@ class MapPickerState extends State<MapPicker> {
     Position? currentPosition;
     try {
       currentPosition = await Geolocator.getCurrentPosition(
-          desiredAccuracy: widget.desiredAccuracy!);
+          locationSettings:
+              LocationSettings(accuracy: widget.desiredAccuracy!));
       d("position = $currentPosition");
 
       setState(() => _currentPosition = currentPosition);
@@ -136,7 +135,8 @@ class MapPickerState extends State<MapPicker> {
 
     if (widget.mapStylePath != null) {
       rootBundle.loadString(widget.mapStylePath!).then((string) {
-        _mapStyle = string;
+        if (!mounted) return;
+        setState(() => _mapStyle = string);
       });
     }
   }
@@ -172,16 +172,13 @@ class MapPickerState extends State<MapPicker> {
         children: <Widget>[
           GoogleMap(
             myLocationButtonEnabled: false,
+            style: _mapStyle,
             initialCameraPosition: CameraPosition(
               target: widget.initialCenter!,
               zoom: widget.initialZoom!,
             ),
             onMapCreated: (GoogleMapController controller) {
               mapController.complete(controller);
-              //Implementation of mapStyle
-              if (widget.mapStylePath != null) {
-                controller.setMapStyle(_mapStyle);
-              }
 
               _lastMapPosition = widget.initialCenter;
               LocationProvider.of(context, listen: false)
@@ -411,11 +408,12 @@ class MapPickerState extends State<MapPicker> {
       context: context,
       barrierDismissible: false,
       builder: (context) {
-        return WillPopScope(
-          onWillPop: () async {
+        return PopScope(
+          canPop: false,
+          onPopInvokedWithResult: (didPop, result) {
+            if (didPop) return;
             Navigator.of(context, rootNavigator: true).pop();
             Navigator.of(context, rootNavigator: true).pop();
-            return true;
           },
           child: AlertDialog(
             title: Text(S.of(context).access_to_location_denied),
@@ -441,11 +439,12 @@ class MapPickerState extends State<MapPicker> {
       context: context,
       barrierDismissible: false,
       builder: (context) {
-        return WillPopScope(
-          onWillPop: () async {
+        return PopScope(
+          canPop: false,
+          onPopInvokedWithResult: (didPop, result) {
+            if (didPop) return;
             Navigator.of(context, rootNavigator: true).pop();
             Navigator.of(context, rootNavigator: true).pop();
-            return true;
           },
           child: AlertDialog(
             title: Text(S.of(context).access_to_location_permanently_denied),
